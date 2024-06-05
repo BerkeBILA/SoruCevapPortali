@@ -1,0 +1,92 @@
+﻿<div class="row">
+    <div class="col-md-8">
+        <h4>Cevaplar</h4>
+        <table class="table" id="tbAnswerList">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Cevap Adı</th>
+                    <th>Başlık</th>
+                    <th>Durumu</th>
+                    <th>Kayıt T.</th>
+                    <th>Düzenleme T.</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h4 id="editHeader">Cevap Ekle</h4>
+        <div class="b-2">
+            <label>Cevap Adı</label>
+            <input type="text" class="form-control" id="txtAnswerName" />
+            <input type="hidden" id="txtId" />
+        </div>
+        <div class="b-2">
+            <label>Başlık</label>
+            <input type="text" class="form-control" id="txtTitle" />
+        </div>
+        <div class="b-2">
+            <input type="checkbox" class="form-check-inline" id="cbIsActive" />
+            <label>Aktif</label>
+        </div>
+        <div class="mb-2">
+            <button class="btn btn-outline-primary btn-sm" id="btnSave">Kaydet</button>
+            <button class="btn btn-outline-primary btn-sm" id="btnEdit">Düzenle</button>
+            <button class="btn btn-outline-danger btn-sm" id="btnDelete">Sil</button>
+            <button class="btn btn-outline-secondary btn-sm" id="btnCancel">Vazgeç</button>
+        </div>
+        <div id="result"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var ApiBaseUrl = "//Answer";
+
+            $("#btnEdit").hide();
+            $("#btnDelete").hide();
+
+            LoadAnswerList();
+
+            function LoadAnswerList() {
+                $.ajax({
+                    url: ApiBaseUrl,
+                    method: "GET",
+                    contentType: "application/json",
+                    success: function (data) {
+                        PopulateAnswerTable(data);
+                    },
+                    error: function () { }
+                });
+            }
+
+            function PopulateAnswerTable(data) {
+                $("#tbAnswerList tbody").empty();
+                $.each(data, function (i, item) {
+                    var isActive = item.isActive ? 'Aktif' : 'Pasif';
+                    var row = "<tr>" +
+                        "<td>" + item.id + "</td>" +
+                        "<td>" + item.answerName + "</td>" +
+                        "<td>" + item.title + "</td>" +
+                        "<td>" + isActive + "</td>" +
+                        "<td>" + FormatDate(item.created) + "</td>" +
+                        "<td>" + FormatDate(item.updated) + "</td>" +
+                        "<td><button class='btn btn-outline-primary btn-sm edit' id='" + item.id + "'>Düzenle</button></td>" +
+                        "</tr>";
+                    $("#tbAnswerList tbody").append(row);
+                });
+            }
+
+            function FormatDate(dateString) {
+                // Date formatlama işlemleri buraya eklenebilir
+                return dateString;
+            }
+
+            // Diğer işlevler buraya eklenebilir...
+        });
+    </script>
+}

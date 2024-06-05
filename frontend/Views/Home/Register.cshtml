@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Register";
+}
+
+<h2>Register</h2>
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+<form id="registerForm" method="post" action="/api/Users/register">
+    <div class="form-group">
+        <label for="inputFullName">Full Name</label>
+        <input type="text" class="form-control" id="inputFullName" name="FullName" placeholder="Enter full name" required>
+    </div>
+    <div class="form-group">
+        <label for="inputEmail">Email address</label>
+        <input type="email" class="form-control" id="inputEmail" name="Email" placeholder="Enter email" required>
+        <div class="invalid-feedback">Please enter a valid email address.</div>
+    </div>
+    <div class="form-group">
+        <label for="inputPassword">Password</label>
+        <input type="password" class="form-control" id="inputPassword" name="Password" placeholder="Password" required>
+        <div class="invalid-feedback">Please enter your password.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
+
+@section Scripts {
+    <script>
+        // Form doğrulama
+        (function () {
+            'use strict';
+
+            window.addEventListener('load', function () {
+                var form = document.getElementById('registerForm');
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            }, false);
+        })();
+    </script>
+}

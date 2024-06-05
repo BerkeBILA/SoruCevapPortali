@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+
+<h2>Login</h2>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<form id="loginForm" method="post" action="/api/Users/login">
+    <div class="form-group">
+        <label for="inputEmail">Email address</label>
+        <input type="email" class="form-control" id="inputEmail" name="Email" placeholder="Enter email" required>
+        <div class="invalid-feedback">Please enter a valid email address.</div>
+    </div>
+    <div class="form-group">
+        <label for="inputPassword">Password</label>
+        <input type="password" class="form-control" id="inputPassword" name="Password" placeholder="Password" required>
+        <div class="invalid-feedback">Please enter your password.</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+    <a href="#" id="forgotPasswordLink">Forgot password?</a>
+</form>
+
+@section Scripts {
+    <script>
+        // Form doğrulama
+        (function () {
+            'use strict';
+
+            window.addEventListener('load', function () {
+                var form = document.getElementById('loginForm');
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            }, false);
+        })();
+
+        // Şifremi unuttum linki
+        $(function () {
+            $('#forgotPasswordLink').click(function () {
+                // Burada şifremi unuttum işlemini gerçekleştirecek bir kod olabilir.
+                alert("Forgot password link clicked.");
+            });
+        });
+    </script>
+}

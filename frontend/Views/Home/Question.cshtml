@@ -1,0 +1,215 @@
+﻿@{
+    ViewData["Title"] = "Questions";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Sorular</h4>
+        <table class="table" id="tbQuestionList">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Soru Adı</th>
+                    <th>Başlık</th>
+                    <th>Durumu</th>
+                    <th>Kayıt T.</th>
+                    <th>Düzenleme T.</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-md-4">
+        <h4 id="editHeader">Soru Ekle</h4>
+        <div class="b-2">
+            <label>Soru Adı</label>
+            <input type="text" class="form-control" id="txtQuestionName" />
+            <input type="hidden" id="txtId" />
+        </div>
+        <div class="b-2">
+            <label>Başlık</label>
+            <input type="text" class="form-control" id="txtTitle" />
+        </div>
+        <div class="b-2">
+            <input type="checkbox" class="form-check-inline" id="cbIsActive" />
+            <label>Aktif</label>
+        </div>
+        <div class="mb-2">
+            <button class="btn btn-outline-primary btn-sm" id="btnSave">Kaydet</button>
+            <button class="btn btn-outline-primary btn-sm" id="btnEdit">Düzenle</button>
+            <button class="btn btn-outline-danger btn-sm" id="btnDelete">Sil</button>
+            <button class="btn btn-outline-secondary btn-sm" id="btnCancel">Vazgeç</button>
+        </div>
+        <div id="result"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var ApiBaseUrl = "/api/Question";
+
+            $("#btnEdit").hide();
+            $("#btnDelete").hide();
+
+            LoadQuestionList();
+
+            function LoadQuestionList() {
+                $.ajax({
+                    url: ApiBaseUrl,
+                    method: "GET",
+                    contentType: "application/json",
+                    success: function (data) {
+                        PopulateQuestionTable(data);
+                    },
+                    error: function () { }
+                });
+            }
+
+            function PopulateQuestionTable(data) {
+                $("#tbQuestionList tbody").empty();
+                $.each(data, function (i, item) {
+                    var isActive = item.isActive ? 'Aktif' : 'Pasif';
+                    var row = "<tr>" +
+                        "<td>" + item.questionId + "</td>" +
+                        "<td>" + item.questionName + "</td>" +
+                        "<td>" + item.title + "</td>" +
+                        "<td>" + isActive + "</td>" +
+                        "<td>" + FormatDate(item.created) + "</td>" +
+                        "<td>" + FormatDate(item.updated) + "</td>" +
+                        "<td><button class='btn btn-outline-primary btn-sm edit' id='" + item.questionId + "'>Düzenle</button></td>" +
+                        "</tr>";
+                    $("#tbQuestionList tbody").append(row);
+                });
+            }
+
+            function FormatDate(dateString) {
+                var date = new Date(dateString);
+                var day = date.getDate().toString().padStart(2, '0');
+                var month = (date.getMonth() + 1).toString().padStart(2, '0');
+                var year = date.getFullYear();
+                var hours = date.getHours().toString().padStart(2, '0');
+                var minutes = date.getMinutes().toString().padStart(2, '0');
+                var seconds = date.getSeconds().toString().padStart(2, '0');
+                return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
+            }
+
+            $("#btnSave").click(function () {
+                var questionName = $("#txtQuestionName").val();
+                var title = $("#txtTitle").val();
+                var isActive = $("#cbIsActive").is(":checked");
+                var question = {
+                    QuestionName: questionName,
+                    Title: title,
+                    IsActive: isActive
+                };
+
+                $.ajax({
+                    url: ApiBaseUrl,
+                    method: "POST",
+                    data: JSON.stringify(question),
+                    contentType: "application/json",
+                    success: function (data) {
+                        $("#result").show();
+                        $("#result").removeClass().addClass("alert alert-success").html("Soru başarıyla kaydedildi.");
+                        LoadQuestionList();
+                        ClearForm();
+                    },
+                    error: function () {
+                        $("#result").show();
+                        $("#result").removeClass().addClass("alert alert-danger").html("Soru kaydedilemedi.");
+                    }
+                });
+            });
+
+            $(document).on("click", ".edit", function () {
+                var id = $(this).attr("id");
+                $.ajax({
+                    url: ApiBaseUrl + "/" + id,
+                    method: "GET",
+                    contentType: "application/json",
+                    success: function (data) {
+                        $("#txtId").val(data.questionId);
+                        $("#txtQuestionName").val(data.questionName);
+                        $("#txtTitle").val(data.title);
+                        $("#cbIsActive").prop("checked", data.isActive);
+
+                        $("#btnEdit").show();
+                        $("#btnDelete").show();
+                        $("#btnSave").hide();
+
+                        $("#editHeader").html("Soru Düzenle - Sil");
+                    },
+                    error: function () { }
+                });
+            });
+
+            $("#btnCancel").click(function () {
+                ClearForm();
+            });
+
+            $("#btnEdit").click(function () {
+                var id = $("#txtId").val();
+                var questionName = $("#txtQuestionName").val();
+                var title = $("#txtTitle").val();
+                var isActive = $("#cbIsActive").is(":checked");
+                var question = {
+                    QuestionId: id,
+                    QuestionName: questionName,
+                    Title: title,
+                    IsActive: isActive
+                };
+
+                $.ajax({
+                    url: ApiBaseUrl + "/" + id,
+                    method: "PUT",
+                    data: JSON.stringify(question),
+                    contentType: "application/json",
+                    success: function () {
+                        $("#result").show();
+                        $("#result").removeClass().addClass("alert alert-success").html("Soru başarıyla güncellendi.");
+                        LoadQuestionList();
+                        ClearForm();
+                    },
+                    error: function () {
+                        $("#result").show();
+                        $("#result").removeClass().addClass("alert alert-danger").html("Soru güncellenemedi.");
+                    }
+                });
+            });
+
+            $("#btnDelete").click(function () {
+                var id = $("#txtId").val();
+
+                $.ajax({
+                    url: ApiBaseUrl + "/" + id,
+                    method: "DELETE",
+                    contentType: "application/json",
+                    success: function () {
+                        $("#result").show();
+                        $("#result").removeClass().addClass("alert alert-success").html("Soru başarıyla silindi.");
+                        LoadQuestionList();
+                        ClearForm();
+                    },
+                    error: function () {
+                        $("#result").show();
+                        $("#result").removeClass().addClass("alert alert-danger").html("Soru silinemedi.");
+                    }
+                });
+            });
+
+            function ClearForm() {
+                $("#txtId").val("");
+                $("#txtQuestionName").val("");
+                $("#txtTitle").val("");
+                $("#cbIsActive").prop("checked", false);
+                $("#btnEdit").hide();
+                $("#btnDelete").hide();
+                $("#btnSave").show();
+                $("#editHeader").html("Soru Ekle");
+            }
+        });
+    </script>
+}
